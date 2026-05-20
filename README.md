@@ -129,14 +129,46 @@ Schéma PostgreSQL complet disponible dans [`docs/database/word_rush_mld.sql`](d
 
 ---
 
-## Sécurité
+## Sécurité & Authentification
+
+### Authentification JWT (Activité 5)
+
+| Élément | Détail |
+|---------|--------|
+| `POST /api/auth/register` | Inscription — hash bcrypt (coût 10), retourne un JWT |
+| `POST /api/auth/login` | Connexion — vérifie le hash, retourne un JWT |
+| `GET /api/auth/me` | Profil — route protégée par middleware JWT |
+| Middleware `verifyToken` | Vérifie le header `Authorization: Bearer <token>` sur toutes les routes sensibles |
+| Expiration token | 7 jours — détectée automatiquement côté front (401 → déconnexion + redirect `/login`) |
+| Déconnexion | Supprime le token du `localStorage`, réinitialise l'état React |
+
+### Flux d'authentification
+
+```
+Client                        Serveur
+  │                              │
+  │── POST /login ──────────────►│ Vérifie email + bcrypt
+  │◄─ { token, user } ──────────│ Signe JWT (7 jours)
+  │                              │
+  │  localStorage.setItem(token) │
+  │                              │
+  │── GET /api/auth/me ─────────►│
+  │   Authorization: Bearer ...  │ verifyToken middleware
+  │◄─ { user data } ────────────│
+  │                              │
+  │  [Token expiré]              │
+  │◄─ 401 Unauthorized ─────────│
+  │  → logout() + redirect /login│
+```
+
+### Autres mesures de sécurité
 
 - Mots de passe hashés avec **bcrypt** (coût 10)
-- Tokens JWT signés, expiration 7 jours
 - Validation complète côté serveur (mots, lettres, timer)
 - Requêtes SQL paramétrées (protection injection SQL)
 - Authentification Socket.io via JWT middleware
 - Variables sensibles dans `.env` (jamais commitées)
+- Réponse identique si email inconnu sur `/forgot-password` (anti-énumération)
 
 ---
 
