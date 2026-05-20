@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #ffffff;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+}
+
+input:focus {
+  outline: none;
+}
+
+/* Animation flash résultat */
+@keyframes flash-green {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: #dcfce7; }
+}
+@keyframes flash-red {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: #fee2e2; }
+}
+.flash-valid { animation: flash-green 0.4s ease; }
+.flash-invalid { animation: flash-red 0.4s ease; }

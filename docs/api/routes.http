@@ -1,0 +1,145 @@
+# Word Rush — Test des routes API REST
+# Activité 3 — M2 INFO Coordination Front & Back
+#
+# Utilisation : installer l'extension "REST Client" sur VS Code
+# puis cliquer sur "Send Request" au-dessus de chaque requête.
+# ─────────────────────────────────────────────────────────────
+
+@baseUrl = http://localhost:3001
+@token = REMPLACER_PAR_TOKEN_APRES_LOGIN
+
+
+# ══════════════════════════════════════════════════════════════
+# 0. SANTÉ DU SERVEUR
+# ══════════════════════════════════════════════════════════════
+
+### Vérifier que le serveur répond
+GET {{baseUrl}}/health
+
+
+# ══════════════════════════════════════════════════════════════
+# 1. AUTHENTIFICATION  —  POST /api/auth/register
+#                         POST /api/auth/login
+#                         GET  /api/auth/me
+# ══════════════════════════════════════════════════════════════
+
+### Inscription d'un nouvel utilisateur
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "test1234"
+}
+
+###
+
+### Connexion (récupérer le token JWT)
+# → Copier la valeur "token" de la réponse dans @token ci-dessus
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "test1234"
+}
+
+###
+
+### Profil de l'utilisateur connecté (JWT requis)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+###
+
+### Connexion avec le compte mock alice (après avoir lancé seed.js)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@test.com",
+  "password": "test1234"
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# 2. CLASSEMENT  —  GET /api/leaderboard
+#                   GET /api/leaderboard/me
+# ══════════════════════════════════════════════════════════════
+
+### Classement général (top 20 joueurs)
+GET {{baseUrl}}/api/leaderboard
+
+###
+
+### Mon classement personnel (JWT requis)
+GET {{baseUrl}}/api/leaderboard/me
+Authorization: Bearer {{token}}
+
+
+# ══════════════════════════════════════════════════════════════
+# 3. MOT DE PASSE OUBLIÉ  —  POST /api/auth/forgot-password
+#                            POST /api/auth/reset-password
+# ══════════════════════════════════════════════════════════════
+
+### Demande de réinitialisation (retourne resetUrl en dev)
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+### Réinitialisation du mot de passe
+# → Remplacer TOKEN_ICI par le token reçu dans la réponse précédente
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "TOKEN_ICI",
+  "password": "nouveauMotDePasse123"
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# 4. CAS D'ERREURS (codes 400, 401, 409, 500)
+# ══════════════════════════════════════════════════════════════
+
+### 400 — Champs manquants à l'inscription
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "incomplet"
+}
+
+###
+
+### 401 — Mauvais mot de passe
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "mauvaisMotDePasse"
+}
+
+###
+
+### 401 — Accès sans token
+GET {{baseUrl}}/api/auth/me
+
+###
+
+### 409 — Email déjà utilisé
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "autreuser",
+  "email": "test@example.com",
+  "password": "test1234"
+}
