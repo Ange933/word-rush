@@ -91,47 +91,52 @@ module.exports = function setupSocket(io) {
     });
 
     socket.on('submit_word', async ({ word } = {}) => {
-      const room = getPlayerRoom(socket.id);
-      if (!room || room.status !== 'playing') return;
+      try {
+        const room = getPlayerRoom(socket.id);
+        if (!room || room.status !== 'playing') return;
 
-      const player = room.players.get(socket.id);
-      if (!player) return;
+        const player = room.players.get(socket.id);
+        if (!player) return;
 
-      // Rate limiting
-      const now = Date.now();
-      if (now - player.lastSubmit < RATE_LIMIT_MS) {
-        return socket.emit('word_result', { word, valid: false, reason: 'Trop vite !' });
-      }
-      player.lastSubmit = now;
+        // Rate limiting
+        const now = Date.now();
+        if (now - player.lastSubmit < RATE_LIMIT_MS) {
+          return socket.emit('word_result', { word, valid: false, reason: 'Trop vite !' });
+        }
+        player.lastSubmit = now;
 
-      // Vérification du timer côté serveur
-      const elapsed = (now - room.startTime.getTime()) / 1000;
-      if (elapsed >= GAME_DURATION) {
-        return socket.emit('word_result', { word, valid: false, reason: 'Temps écoulé' });
-      }
+        // Vérification du timer côté serveur
+        const elapsed = (now - room.startTime.getTime()) / 1000;
+        if (elapsed >= GAME_DURATION) {
+          return socket.emit('word_result', { word, valid: false, reason: 'Temps écoulé' });
+        }
 
-      const normalized = normalize(word || '');
+        const normalized = normalize(word || '');
 
-      // Doublon
-      if (player.words.includes(normalized)) {
-        return socket.emit('word_result', { word: normalized, valid: false, reason: 'Mot déjà utilisé' });
-      }
+        // Doublon
+        if (player.words.includes(normalized)) {
+          return socket.emit('word_result', { word: normalized, valid: false, reason: 'Mot déjà utilisé' });
+        }
 
-      const result = await validateWord(normalized, room.letters);
+        const result = await validateWord(normalized, room.letters);
 
-      if (result.valid) {
-        player.score += result.points;
-        player.words.push(normalized);
+        if (result.valid) {
+          player.score += result.points;
+          player.words.push(normalized);
 
-        socket.emit('word_result', {
-          word: normalized,
-          valid: true,
-          points: result.points,
-          totalScore: player.score,
-        });
-        io.to(room.id).emit('score_update', { scores: getScores(room) });
-      } else {
-        socket.emit('word_result', { word: normalized, valid: false, reason: result.reason });
+          socket.emit('word_result', {
+            word: normalized,
+            valid: true,
+            points: result.points,
+            totalScore: player.score,
+          });
+          io.to(room.id).emit('score_update', { scores: getScores(room) });
+        } else {
+          socket.emit('word_result', { word: normalized, valid: false, reason: result.reason });
+        }
+      } catch (err) {
+        console.error('Erreur submit_word:', err.message);
+        socket.emit('word_result', { word, valid: false, reason: 'Erreur serveur' });
       }
     });
 

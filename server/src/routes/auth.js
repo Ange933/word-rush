@@ -3,13 +3,17 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const pool = require('../config/db');
 const { signToken, verifyToken } = require('../middleware/auth');
+const { rateLimiter } = require('../middleware/rateLimiter');
 
 // Tokens de réinitialisation en mémoire (expire après 1h)
 const resetTokens = new Map();
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+// Anti brute-force : 10 tentatives / 5 min par IP sur les routes sensibles
+const authLimiter = rateLimiter({ windowMs: 5 * 60 * 1000, max: 10 });
+
+router.post('/register', authLimiter, async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Tous les champs sont requis' });
@@ -38,7 +42,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email et mot de passe requis' });
@@ -75,7 +79,7 @@ router.get('/me', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', authLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email requis' });
 

@@ -4,6 +4,11 @@ Activité 4 — M2 INFO — Coordination Front & Back
 
 > Ces maquettes représentent la structure des pages de l'application Word Rush.
 > L'application est développée en React 18 + Tailwind CSS.
+>
+> **Note (Activité 5) :** la palette de couleurs ci-dessous (thème sombre violet) correspond à la
+> proposition initiale de ces wireframes. Le thème a ensuite évolué vers un design minimaliste
+> blanc/noir (inspiration NYT Wordle/Spelling Bee) — voir l'application réelle pour le rendu final.
+> La structure des pages et le flux de navigation décrits ici restent valides.
 
 ---
 

@@ -174,7 +174,4 @@ Client                        Serveur
 
 ## Documentation
 
-- [`docs/GUIDE_UTILISATION.md`](docs/GUIDE_UTILISATION.md) — Guide d'utilisation complet
-- [`docs/database/word_rush_mld.sql`](docs/database/word_rush_mld.sql) — Schéma SQL
-- [`docs/database/word_rush_mcd.dbml`](docs/database/word_rush_mcd.dbml) — Modèle conceptuel
-- [`CLAUDE.md`](CLAUDE.md) — Architecture et conventions du projet
+Voir [`docs/README.md`](docs/README.md) pour l'index complet de la documentation (guide d'utilisation, schéma de base de données, rapport d'analyse critique, etc.).
